@@ -1,0 +1,19 @@
+type User {
+    id: ID!,
+    name: String!,
+    username: String!,
+    password: String,
+    c_at: String,
+    u_at: String,
+    deleted: Boolean
+}
+
+type Query {
+    user(id: Int): User
+    users(limit: Int, offset: Int): [User]!
+}
+
+type Mutation {
+    register(username: String, name: String, password: String): User
+    removeAllUserName(username: String!): [User]
+}

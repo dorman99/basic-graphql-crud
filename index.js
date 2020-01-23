@@ -1,64 +1,34 @@
 const {ApolloServer, gql} = require("apollo-server");
-let all_users = []
-let count_user = all_users.length;
-const typeDefs = gql`
-
-type Query {
-    hello: String!,
-    user(id: Int): User,
-    users: [User]!
-}
-
-type User {
-    id: ID!,
-    name: String!,
-    username: String!,
-
-}
-
-type Mutation {
-    register(username: String, name: String): User!,
-    removeUser(id: Int): [User],
-    update(id: Int, username: String): User
-}
-`
-
-const resolvers = {
-    Query: {
-        hello: () => `Hello World`,
-        user: (_, {id}, context) => {
-            let user = all_users.find(user => user.id == id);
-            return user ? user : null
-        },
-        users: () => {
-            return all_users;
-        }
-    },
-    Mutation: {
-        register: (parent, {username, name}, context) => {
-            const newUser = {
-                id: ++count_user,
-                username,
-                name
-            }
-            all_users.push(newUser);
-            return  newUser;
-        },
-        removeUser: (parent, {id}, content) => {
-            all_users = all_users.filter(user => parseInt(user.id) !== parseInt(id));
-            return all_users;
-        },
-        update: (parent, {id, username}) => {
-            let idx = all_users.findIndex(user => user.id == id);
-            if (idx > 0) {
-                all_users[idx].username = username;
-            }
-            return idx > 0 ? all_users[idx] : 'user id not found';
-        }
-    }
-}
-
+const {initialQuery} = require("./utils/constant");
+// const {makeExecutableSchema} = require("graphql-tools");
+const glue = require("schemaglue");
+const {schema, resolver} = glue("src/graphql");
+const pool = require("./database");
+const bcrypt = require("bcrypt");
 const port = 3000;
-const server = new ApolloServer({typeDefs, resolvers});
 
-server.listen({port}).then(({url}) => console.log(`Server Start on Port ${url}`));
+pool.connect()
+.then(client => {
+    client.query(initialQuery)
+    .then(res => {
+        console.log('intial db succes');
+        const server = new ApolloServer({typeDefs: schema, resolvers: resolver, context: ({req, res}) => ({req, res, client, bcrypt})});
+        server.listen({port}).then(({url}) => console.log(`Server Start on Port ${url}`));
+
+    })
+    .catch(err => {
+        console.log(err);
+        client.release();
+    })
+})
+.then(err => {
+    if (err) console.log(err);
+})
+
+function hashPassword(password) {
+    let crypto = require("crypto");
+    let secret = 'umami';
+    return crypto.createHmac('sha256', secret)
+    .update(password)
+    .digest('hex');
+}
