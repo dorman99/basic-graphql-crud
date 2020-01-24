@@ -11,6 +11,11 @@ type User {
 type Query {
     user(id: Int): User
     users(limit: Int, offset: Int): [User]!
+    login(username: String!, password: String!): loginResponse!
+}
+
+type loginResponse {
+    token: String!
 }
 
 type Mutation {

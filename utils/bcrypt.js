@@ -1,6 +1,6 @@
 require("dotenv").config();
 const bcrypt = require("bcrypt");
-let saltRound = parseInt(process.env.PASSWORD_SALT || 20); 
+let saltRound = parseInt(process.env.PASSWORD_SALT || 10); 
 
 module.exports =  {
     hash: async (password) => {
@@ -11,5 +11,14 @@ module.exports =  {
             })
         });
         return hashedPassword;
+    },
+    compare: async (password, hashPassword) => {
+        let compare = await new Promise((resolve, reject) => {
+            bcrypt.compare(password, hashPassword, (err, isValid) => {
+                if (err) reject(err);
+                else resolve(isValid);
+            })
+        })
+        return compare;
     }
 }

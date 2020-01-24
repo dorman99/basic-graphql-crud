@@ -25,6 +25,37 @@ exports.resolver = {
             .catch(err => {
                 throw Error(err);
             })
+        },
+        login: (_, {username, password}, {client, bcrypt, jwtService}) => {
+            return client.query(`SELECT * FROM usertodo WHERE username = '${username}' AND deleted is FALSE;`)
+            .then(result => result.rows[0])
+            .then(user => {
+                if (user) {
+                    return bcrypt.compare(password, user.password)
+                    .then(isValid => {
+                        if (isValid) {
+                            return user;
+                        }
+                        else {
+                            throw Error("password not match");
+                        }
+                    })
+                }
+                else {
+                    throw Error("Data Not Found");
+                }
+            })
+            .then(user => {
+                let genToken = jwtService.sign(user);
+                return genToken.then(token => {
+                    return {token}
+                })
+            })
+            .catch(err => {
+                console.log(err);
+                throw Error(err);
+            })
+
         }
     },
     Mutation: {
@@ -35,18 +66,17 @@ exports.resolver = {
                     return new Error("Duplicated Username");
                 }
                 else {
-                    let hashed = bcrypt.hashSync(password, saltRound);
-                    return client.query(`INSERT INTO usertodo (username, name, password) VALUES ('${username}', '${name}', '${hashed}') RETURNING *`)
-                    .then(result => {
-                        return result.rows[0];
+                    let hashed = bcrypt.hash(password, saltRound);
+                    return hashed.then(password => password)
+                    .then(hashedPassword => {
+                        return client.query(`INSERT INTO usertodo (username, name, password) VALUES ('${username}', '${name}', '${hashedPassword}') RETURNING *`)
                     })
-                    .catch(err => {
-                        throw Error(err);
-                    })
+                    .then(result => result.rows[0])
                 }
             })
             .catch(err => {
                 console.log(err);
+                throw Error(err);
             })
         },
         removeAllUserName: (_, {username}, {client}) => {
