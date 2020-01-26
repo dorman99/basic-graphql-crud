@@ -12,7 +12,8 @@ module.exports =  {
     CREATE INDEX IF NOT EXISTS username_user_idx ON usertodo (username, id); 
     
     ALTER TABLE usertodo ADD COLUMN IF NOT EXISTS name VARCHAR NOT NULL;
-
+    ALTER TABLE usertodo ALTER COLUMN c_at TYPE DATE;
+    ALTER TABLE usertodo ALTER COLUMN u_at TYPE DATE;
     CREATE TABLE IF NOT EXISTS todo (
         id BIGSERIAL PRIMARY KEY,
         name VARCHAR NOT NULL,
@@ -29,5 +30,9 @@ module.exports =  {
     CREATE INDEX IF NOT EXISTS name_todo_idx ON todo (name, id);
     CREATE INDEX IF NOT EXISTS date_todo_idx ON todo (c_at, id);
     CREATE INDEX IF NOT EXISTS endDate_todo_idx ON todo (endDate, id);
+
+    ALTER TABLE todo ALTER COLUMN c_at TYPE DATE;
+    ALTER TABLE todo ALTER COLUMN u_at TYPE DATE;
+    ALTER TABLE todo ALTER COLUMN enddate TYPE DATE;
     `
 }

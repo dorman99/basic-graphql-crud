@@ -5,6 +5,7 @@ const {schema, resolver} = glue("src/graphql");
 const pool = require("./database");
 const bcrypt = require("./utils/bcrypt");
 const jwtService = require("./utils/jwtService");
+const date = require("./utils/date");
 const port = 3000;
 
 pool.connect()
@@ -12,7 +13,7 @@ pool.connect()
     client.query(initialQuery)
     .then(res => {
         console.log('intial db succes');
-        const server = new ApolloServer({typeDefs: schema, resolvers: resolver, context: ({req, res}) => ({req, res, client, bcrypt, jwtService, ApolloError})});
+        const server = new ApolloServer({typeDefs: schema, resolvers: resolver, context: ({req, res}) => ({req, res, client, bcrypt, jwtService, date, ApolloError})});
         server.listen({port}).then(({url}) => console.log(`Server Start on Port ${url}`));
 
     })
