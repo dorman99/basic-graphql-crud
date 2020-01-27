@@ -1,5 +1,5 @@
 type Todo {
-    id: String!,
+    id: Int!,
     name: String!,
     isDone: Boolean!,
     endDate: String!,
@@ -7,7 +7,7 @@ type Todo {
 }
 
 type Query {
-    getTodoByDate(date: String!): [Todo!],
+    getTodoByDate(dates: String!): [Todo!],
     getByStatus(isDone: Boolean!): [Todo]!,
     getById(id: Int!): Todo
 }
@@ -15,5 +15,6 @@ type Query {
 type Mutation {
     addTodo(name: String!, endDate: String!): Todo!,
     updateTodo(id: Int!, name: String!, endDate: String!): Todo!,
+    doneTodo(id: Int!): Todo!,
     removeTodo(id: Int!): Todo
 }
